@@ -6,6 +6,7 @@ import com.uniquehire.rolemanagement.dto.response.ApiResponse;
 import com.uniquehire.rolemanagement.dto.response.PermissionResponseDto;
 import com.uniquehire.rolemanagement.entity.Permission;
 import com.uniquehire.rolemanagement.repository.PermissionRepository;
+import com.uniquehire.rolemanagement.repository.UserRepository;
 import com.uniquehire.rolemanagement.service.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,11 @@ public class PermissionServiceImpl implements PermissionService {
     private static final Logger logger = LoggerFactory.getLogger(PermissionServiceImpl.class);
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private PermissionRepository repository;
+
 
     @Override
     public ApiResponse<PermissionResponseDto> createPermission(PermissionRequestDto dto) {
@@ -116,6 +121,7 @@ public class PermissionServiceImpl implements PermissionService {
                     null
             );
         }
+
     }
 
     @Override
