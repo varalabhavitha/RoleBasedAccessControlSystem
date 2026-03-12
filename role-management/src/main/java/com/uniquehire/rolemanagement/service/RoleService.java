@@ -1,7 +1,6 @@
 package com.uniquehire.rolemanagement.service;
 
 import com.uniquehire.rolemanagement.dto.request.RoleRequest;
-import com.uniquehire.rolemanagement.dto.response.ApiResponse;
 import com.uniquehire.rolemanagement.dto.response.RoleResponse;
 import org.springframework.data.domain.Page;
 
@@ -9,19 +8,20 @@ import java.util.List;
 
 public interface RoleService {
 
-    ApiResponse<RoleResponse> createRole(RoleRequest request);
+    RoleResponse createRole(RoleRequest request);
 
-    ApiResponse<RoleResponse> updateRole(Long roleId, RoleRequest request);
+    RoleResponse updateRole(Long roleId, RoleRequest request);
 
-    ApiResponse<List<RoleResponse>> getAllRoles();
+    List<RoleResponse> getAllRoles();
 
-    ApiResponse<RoleResponse> getRoleById(Long roleId);
+    RoleResponse getRoleById(Long roleId);
 
-    ApiResponse<String> deleteRole(Long roleId);
+    String deleteRole(Long roleId);
 
-    ApiResponse<String> assignPermission(Long roleId, Long permissionId);
+    String assignPermission(Long roleId, Long permissionId);
 
-    ApiResponse<String> assignRoleToUser(Long userId, Long roleId);
+    String assignRoleToUser(Long userId, Long roleId);
 
-    ApiResponse<Page<RoleResponse>> getRolesWithPagination(int page, int size);
+    Page<RoleResponse> getRolesWithPagination(int page, int size);
+
 }

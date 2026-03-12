@@ -36,9 +36,9 @@ public class UserServiceImpl implements UserService {
                 .password(request.getPassword())
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        return mapToResponse(user);
+        return mapToResponse(savedUser);
     }
 
     @Override

@@ -1,15 +1,19 @@
 package com.uniquehire.rolemanagement.service.impl;
 
 import com.uniquehire.rolemanagement.dto.request.RoleRequest;
-import com.uniquehire.rolemanagement.dto.response.ApiResponse;
 import com.uniquehire.rolemanagement.dto.response.RoleResponse;
+import com.uniquehire.rolemanagement.entity.Permission;
 import com.uniquehire.rolemanagement.entity.Role;
-import com.uniquehire.rolemanagement.enums.MessageEnum;
+import com.uniquehire.rolemanagement.entity.User;
 import com.uniquehire.rolemanagement.enums.Status;
+import com.uniquehire.rolemanagement.repository.PermissionRepository;
 import com.uniquehire.rolemanagement.repository.RoleRepository;
+import com.uniquehire.rolemanagement.repository.UserRepository;
 import com.uniquehire.rolemanagement.service.RoleService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,9 +30,11 @@ import java.util.stream.Collectors;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public ApiResponse<RoleResponse> createRole(RoleRequest request) {
+    public RoleResponse createRole(RoleRequest request) {
 
         Role role = Role.builder()
                 .roleName(request.getRoleName())
@@ -39,45 +46,23 @@ public class RoleServiceImpl implements RoleService {
 
         Role savedRole = roleRepository.save(role);
 
-        return ApiResponse.<RoleResponse>builder()
-                .success(true)
-                .message(MessageEnum.ROLE_CREATED.getMessage())
-                .data(map(savedRole))
-                .build();
+        return map(savedRole);
     }
 
     @Override
-    public ApiResponse<RoleResponse> getRoleById(Long roleId) {
+    public RoleResponse getRoleById(Long roleId) {
 
-        Role role = roleRepository.findById(roleId).orElse(null);
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        if (role == null) {
-            return ApiResponse.<RoleResponse>builder()
-                    .success(false)
-                    .message(MessageEnum.ROLE_NOT_FOUND.getMessage())
-                    .data(null)
-                    .build();
-        }
-
-        return ApiResponse.<RoleResponse>builder()
-                .success(true)
-                .message(MessageEnum.ROLE_FETCHED.getMessage())
-                .data(map(role))
-                .build();
+        return map(role);
     }
 
     @Override
-    public ApiResponse<RoleResponse> updateRole(Long roleId, RoleRequest request) {
+    public RoleResponse updateRole(Long roleId, RoleRequest request) {
 
-        Role role = roleRepository.findById(roleId).orElse(null);
-
-        if (role == null) {
-            return ApiResponse.<RoleResponse>builder()
-                    .success(false)
-                    .message(MessageEnum.ROLE_NOT_FOUND.getMessage())
-                    .data(null)
-                    .build();
-        }
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
         role.setRoleName(request.getRoleName());
         role.setDescription(request.getDescription());
@@ -87,91 +72,89 @@ public class RoleServiceImpl implements RoleService {
 
         Role updatedRole = roleRepository.save(role);
 
-        return ApiResponse.<RoleResponse>builder()
-                .success(true)
-                .message(MessageEnum.ROLE_UPDATED.getMessage())
-                .data(map(updatedRole))
-                .build();
+        return map(updatedRole);
     }
 
     @Override
-    public ApiResponse<String> deleteRole(Long roleId) {
+    public String deleteRole(Long roleId) {
 
-        Role role = roleRepository.findById(roleId).orElse(null);
-
-        if (role == null) {
-            return ApiResponse.<String>builder()
-                    .success(false)
-                    .message(MessageEnum.ROLE_NOT_FOUND.getMessage())
-                    .data(null)
-                    .build();
-        }
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
         role.setStatus(Status.DELETED);
         role.setUpdatedAt(LocalDateTime.now());
+
         roleRepository.save(role);
 
-        return ApiResponse.<String>builder()
-                .success(true)
-                .message(MessageEnum.ROLE_DELETED.getMessage())
-                .data("Deleted")
-                .build();
+        return "Role deleted successfully";
     }
 
     @Override
-    public ApiResponse<List<RoleResponse>> getAllRoles() {
+    public List<RoleResponse> getAllRoles() {
 
-        List<RoleResponse> roles = roleRepository.findAll()
+        return roleRepository.findAll()
                 .stream()
                 .map(this::map)
                 .collect(Collectors.toList());
-
-        return ApiResponse.<List<RoleResponse>>builder()
-                .success(true)
-                .message(MessageEnum.ROLES_FETCHED.getMessage())
-                .data(roles)
-                .build();
     }
 
     @Override
-    public ApiResponse<Page<RoleResponse>> getRolesWithPagination(int page, int size) {
+    public Page<RoleResponse> getRolesWithPagination(int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<RoleResponse> roles = roleRepository.findAll(pageable)
+        return roleRepository.findAll(pageable)
                 .map(this::map);
-
-        return ApiResponse.<Page<RoleResponse>>builder()
-                .success(true)
-                .message(MessageEnum.ROLES_FETCHED.getMessage())
-                .data(roles)
-                .build();
     }
 
     @Override
-    public ApiResponse<String> assignPermission(Long roleId, Long permissionId) {
-        return ApiResponse.<String>builder()
-                .success(true)
-                .message("Assign permission functionality not implemented yet")
-                .data(null)
-                .build();
+    public String assignPermission(Long roleId, Long permissionId) {
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("Permission not found"));
+
+        if (role.getPermissions().contains(permission)) {
+            return "Permission already assigned to role";
+        }
+
+        role.getPermissions().add(permission);
+        roleRepository.save(role);
+
+        return "Permission assigned to role successfully";
     }
 
     @Override
-    public ApiResponse<String> assignRoleToUser(Long userId, Long roleId) {
-        return ApiResponse.<String>builder()
-                .success(true)
-                .message("Assign role to user functionality not implemented yet")
-                .data(null)
-                .build();
+    public String assignRoleToUser(Long userId, Long roleId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        user.setRole(role);
+        userRepository.save(user);
+
+        return "Role assigned to user successfully";
     }
 
     private RoleResponse map(Role role) {
+
+        Set<String> permissionNames = role.getPermissions()
+                .stream()
+                .map(Permission::getName)
+                .collect(Collectors.toSet());
+
         return RoleResponse.builder()
                 .roleId(role.getRoleId())
                 .roleName(role.getRoleName())
                 .description(role.getDescription())
                 .status(role.getStatus())
+                .permissions(permissionNames)
                 .build();
     }
+
 }
