@@ -31,6 +31,10 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
+
     @PrePersist
     public void prePersist(){
         this.createdAt = LocalDateTime.now();
