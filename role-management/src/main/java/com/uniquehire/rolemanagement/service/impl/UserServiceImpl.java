@@ -12,9 +12,14 @@ import com.uniquehire.rolemanagement.repository.RoleRepository;
 import com.uniquehire.rolemanagement.repository.UserRepository;
 import com.uniquehire.rolemanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.example.notificationservce.DTO.NotificationRequestDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +29,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public UserResponseDTO registerUser(UserRequestDTO request) {
@@ -48,14 +55,36 @@ public class UserServiceImpl implements UserService {
 
         User user = User.builder()
                 .username(request.getUsername())
-                .username(request.getUsername())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
                 .password(request.getPassword())
                 .role(role)
                 .organization(organization)
                 .build();
 
         User savedUser = userRepository.save(user);
+
+
+        // CALL NOTIFICATION SERVICE
+
+        NotificationRequestDTO notificationRequest = new NotificationRequestDTO();
+
+        notificationRequest.setEventType("USER_REGISTERED");
+        notificationRequest.setEmail(savedUser.getEmail());
+        notificationRequest.setPhoneNumber(savedUser.getPhoneNumber());
+
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("username", savedUser.getUsername());
+        placeholders.put("organization", savedUser.getOrganization().getOrgName());
+
+        notificationRequest.setPlaceholders(placeholders);
+
+        restTemplate.postForObject(
+                "http://localhost:8082/api/notifications/send",
+                notificationRequest,
+                String.class
+        );
+
 
         return mapToResponse(savedUser);
     }

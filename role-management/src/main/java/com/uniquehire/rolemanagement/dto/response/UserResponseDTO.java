@@ -18,6 +18,8 @@ public class UserResponseDTO {
 
     private String email;
 
+    private String phoneNumber;
+
     private Boolean status;
 
     private LocalDateTime createdAt;
