@@ -34,6 +34,4 @@ public class Organization {
     @JsonManagedReference
     private List<Department> departments;
 
-    @OneToOne(mappedBy = "organization", fetch = FetchType.LAZY)
-    private User user;
 }

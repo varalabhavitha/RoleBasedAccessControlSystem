@@ -38,7 +38,7 @@ public class User {
     private Role role;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", unique = true, nullable = false)
+    @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
     @PrePersist

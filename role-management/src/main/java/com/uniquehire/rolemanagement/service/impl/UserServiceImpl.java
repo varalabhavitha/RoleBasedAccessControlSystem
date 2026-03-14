@@ -12,6 +12,8 @@ import com.uniquehire.rolemanagement.repository.RoleRepository;
 import com.uniquehire.rolemanagement.repository.UserRepository;
 import com.uniquehire.rolemanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.notificationservce.DTO.NotificationRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
@@ -43,16 +46,16 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException("Username already exists");
         }
 
-        if (userRepository.existsByOrganization_OrgId(request.getOrganizationId())) {
+        /*if (userRepository.existsByOrganization_OrgId(request.getOrganizationId())) {
             throw new UserAlreadyExistsException("Organization already assigned to another user");
-        }
+        }*/
 
         Role role = roleRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
-
+        log.error("Before User Object creation");
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -80,11 +83,10 @@ public class UserServiceImpl implements UserService {
         notificationRequest.setPlaceholders(placeholders);
 
         restTemplate.postForObject(
-                "http://localhost:8082/api/notifications/send",
+                "http://localhost:8080/api/notifications/send",
                 notificationRequest,
                 String.class
         );
-
 
         return mapToResponse(savedUser);
     }
