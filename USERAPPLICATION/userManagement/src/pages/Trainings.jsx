@@ -1,257 +1,3 @@
-// import { useState } from "react";
-// import Sidebar from "../components/Sidebar";
-// import Topbar from "../components/Topbar";
-// import { Search, Plus, Pencil, Trash2, X } from "lucide-react";
-// import "../css/Trainees.css";
-
-// function Trainees() {
-//   const [trainees, setTrainees] = useState([]);
-//   const [search, setSearch] = useState("");
-//   const [showModal, setShowModal] = useState(false);
-
-//   const [formData, setFormData] = useState({
-//     trainee: "",
-//     program: "",
-//     organization: "",
-//     mentor: "",
-//     progress: "",
-//     status: "Active"
-//   });
-
-//   const handleChange = (e) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       [e.target.name]: e.target.value
-//     }));
-//   };
-
-//   const handleAddTrainee = (e) => {
-//     e.preventDefault();
-
-//     if (!formData.trainee || !formData.program || !formData.organization) {
-//       alert("Please fill all required fields");
-//       return;
-//     }
-
-//     const newTrainee = {
-//       id: trainees.length + 1,
-//       ...formData
-//     };
-
-//     setTrainees((prev) => [...prev, newTrainee]);
-
-//     setFormData({
-//       trainee: "",
-//       program: "",
-//       organization: "",
-//       mentor: "",
-//       progress: "",
-//       status: "Active"
-//     });
-
-//     setShowModal(false);
-//   };
-
-//   const handleDelete = (id) => {
-//     setTrainees((prev) => prev.filter((item) => item.id !== id));
-//   };
-
-//   const filteredTrainees = trainees.filter((item) =>
-//     `${item.trainee} ${item.program} ${item.organization}`
-//       .toLowerCase()
-//       .includes(search.toLowerCase())
-//   );
-
-//   return (
-//     <div className="trainees-layout">
-//       <Sidebar />
-//       <div className="trainees-main">
-//         <Topbar title="Trainees" />
-
-//         <div className="trainees-content">
-//           <div className="trainees-toolbar">
-//             <div className="trainees-search">
-//               <Search size={22} />
-//               <input
-//                 type="text"
-//                 placeholder="Search trainees..."
-//                 value={search}
-//                 onChange={(e) => setSearch(e.target.value)}
-//               />
-//             </div>
-
-//             <button
-//               className="trainees-add-btn"
-//               onClick={() => setShowModal(true)}
-//             >
-//               <Plus size={20} />
-//               Add New Trainee
-//             </button>
-//           </div>
-
-//           <div className="trainees-table-wrap">
-//             <table className="trainees-table">
-//               <thead>
-//                 <tr>
-//                   <th>ID</th>
-//                   <th>Trainee</th>
-//                   <th>Program</th>
-//                   <th>Organization</th>
-//                   <th>Mentor</th>
-//                   <th>Progress</th>
-//                   <th>Status</th>
-//                   <th>Actions</th>
-//                 </tr>
-//               </thead>
-
-//               <tbody>
-//                 {filteredTrainees.length > 0 ? (
-//                   filteredTrainees.map((item) => (
-//                     <tr key={item.id}>
-//                       <td>{item.id}</td>
-//                       <td>{item.trainee}</td>
-//                       <td>{item.program}</td>
-//                       <td>{item.organization}</td>
-//                       <td>{item.mentor}</td>
-//                       <td>{item.progress}%</td>
-//                       <td>
-//                         <span
-//                           className={`trainee-status ${item.status.toLowerCase()}`}
-//                         >
-//                           {item.status}
-//                         </span>
-//                       </td>
-
-//                       <td>
-//                         <div className="trainees-actions">
-//                           <Pencil size={19} className="edit-icon" />
-//                           <Trash2
-//                             size={19}
-//                             className="delete-icon"
-//                             onClick={() => handleDelete(item.id)}
-//                           />
-//                         </div>
-//                       </td>
-//                     </tr>
-//                   ))
-//                 ) : (
-//                   <tr>
-//                     <td colSpan="8" className="no-data">
-//                       No trainees added yet
-//                     </td>
-//                   </tr>
-//                 )}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-
-//         {showModal && (
-//           <div className="trainee-modal-overlay">
-//             <div className="trainee-modal">
-//               <div className="trainee-modal-header">
-//                 <h2>Add New Trainee</h2>
-//                 <button
-//                   className="close-btn"
-//                   onClick={() => setShowModal(false)}
-//                 >
-//                   <X size={24} />
-//                 </button>
-//               </div>
-
-//               <form className="trainee-form" onSubmit={handleAddTrainee}>
-//                 <div className="trainee-form-grid">
-
-//                   <div>
-//                     <label>Trainee Name</label>
-//                     <input
-//                       type="text"
-//                       name="trainee"
-//                       value={formData.trainee}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Program</label>
-//                     <input
-//                       type="text"
-//                       name="program"
-//                       value={formData.program}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Organization</label>
-//                     <input
-//                       type="text"
-//                       name="organization"
-//                       value={formData.organization}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Mentor</label>
-//                     <input
-//                       type="text"
-//                       name="mentor"
-//                       value={formData.mentor}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Progress (%)</label>
-//                     <input
-//                       type="number"
-//                       name="progress"
-//                       value={formData.progress}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Status</label>
-//                     <select
-//                       name="status"
-//                       value={formData.status}
-//                       onChange={handleChange}
-//                     >
-//                       <option>Active</option>
-//                       <option>Completed</option>
-//                       <option>Inactive</option>
-//                     </select>
-//                   </div>
-
-//                 </div>
-
-//                 <div className="trainee-form-actions">
-//                   <button
-//                     type="button"
-//                     className="cancel-btn"
-//                     onClick={() => setShowModal(false)}
-//                   >
-//                     Cancel
-//                   </button>
-
-//                   <button type="submit" className="save-btn">
-//                     Save Trainee
-//                   </button>
-//                 </div>
-
-//               </form>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Trainees;
-
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -266,8 +12,11 @@ import {
   deleteTraining,
 } from "../api/trainingApi";
 
+import { getAllDepartments } from "../api/departmentApi";
+
 function Training() {
   const [trainings, setTrainings] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -284,6 +33,7 @@ function Training() {
 
   useEffect(() => {
     fetchTrainings();
+    fetchDepartments();
   }, []);
 
   const fetchTrainings = async () => {
@@ -293,6 +43,16 @@ function Training() {
     } catch (error) {
       console.error("Error fetching trainings:", error);
       alert("Failed to fetch trainings");
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const data = await getAllDepartments();
+      setDepartments(data);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+      alert("Failed to fetch departments");
     }
   };
 
@@ -389,8 +149,15 @@ function Training() {
     }
   };
 
+  const getDepartmentName = (deptId) => {
+    const dept = departments.find((d) => d.id === deptId);
+    return dept ? dept.departmentName : deptId;
+  };
+
   const filteredTrainings = trainings.filter((training) =>
-    `${training.trainingId} ${training.trainingName}`
+    `${training.trainingId} ${training.trainingName} ${getDepartmentName(
+      training.departmentId
+    )}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
@@ -437,7 +204,7 @@ function Training() {
                   <th>Start Date</th>
                   <th>End Date</th>
                   <th>No. Of Trainees</th>
-                  <th>Department ID</th>
+                  <th>Department Name</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -453,7 +220,7 @@ function Training() {
                       <td>{training.startDate}</td>
                       <td>{training.endDate}</td>
                       <td>{training.noOfTrainees}</td>
-                      <td>{training.departmentId}</td>
+                      <td>{getDepartmentName(training.departmentId)}</td>
                       <td>
                         <div className="training-actions">
                           <Pencil
@@ -562,13 +329,19 @@ function Training() {
                   </div>
 
                   <div>
-                    <label>Department ID</label>
-                    <input
-                      type="number"
+                    <label>Department</label>
+                    <select
                       name="departmentId"
                       value={formData.departmentId}
                       onChange={handleChange}
-                    />
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.departmentName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

@@ -36,6 +36,7 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", unique = true, nullable = false)
     private Organization organization;
