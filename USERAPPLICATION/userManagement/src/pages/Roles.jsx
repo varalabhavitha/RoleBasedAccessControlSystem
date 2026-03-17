@@ -9,7 +9,6 @@ import {
   getAllRoles,
   getRoleById,
   updateRole,
-  deleteRole,
 } from "../api/roleApi";
 
 import { getPermissions } from "../api/permissionApi";
@@ -37,7 +36,12 @@ function Role() {
   const fetchRoles = async () => {
     try {
       const data = await getAllRoles();
-      setRoles(data);
+
+      const activeRoles = (data || []).filter(
+        (role) => String(role.status).toUpperCase() === "ACTIVE"
+      );
+
+      setRoles(activeRoles);
     } catch (error) {
       console.error("Error fetching roles:", error);
       alert("Failed to fetch roles");
@@ -47,7 +51,7 @@ function Role() {
   const fetchPermissions = async () => {
     try {
       const res = await getPermissions(0, 100);
-      setPermissions(res.data.data || []);
+      setPermissions(res.data || []);
     } catch (error) {
       console.error("Error fetching permissions:", error);
       alert("Failed to fetch permissions");
@@ -55,23 +59,25 @@ function Role() {
   };
 
   const handleChange = (e) => {
-    const { name, value, options } = e.target;
+    const { name, value } = e.target;
 
-    if (name === "permissionIds") {
-      const selectedValues = Array.from(options)
-        .filter((option) => option.selected)
-        .map((option) => Number(option.value));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-      setFormData((prev) => ({
+  const handlePermissionChange = (permissionId) => {
+    setFormData((prev) => {
+      const alreadySelected = prev.permissionIds.includes(permissionId);
+
+      return {
         ...prev,
-        permissionIds: selectedValues,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [e.target.name]: e.target.value,
-      }));
-    }
+        permissionIds: alreadySelected
+          ? prev.permissionIds.filter((id) => id !== permissionId)
+          : [...prev.permissionIds, permissionId],
+      };
+    });
   };
 
   const resetForm = () => {
@@ -85,11 +91,17 @@ function Role() {
     setEditId(null);
   };
 
-  const getPermissionNames = (permissionIds) => {
-    if (!permissionIds || permissionIds.length === 0) return [];
+  const getPermissionNames = (rolePermissions) => {
+    if (!rolePermissions || rolePermissions.length === 0) return [];
 
-    return permissionIds.map((id) => {
-      const permission = permissions.find((item) => item.id === id);
+    if (typeof rolePermissions[0] === "string") {
+      return rolePermissions;
+    }
+
+    return rolePermissions.map((id) => {
+      const permission = permissions.find(
+        (item) => String(item.id) === String(id)
+      );
       return permission ? permission.name : id;
     });
   };
@@ -129,7 +141,7 @@ function Role() {
       setShowModal(false);
     } catch (error) {
       console.error("Error saving role:", error);
-      alert("Failed to save role");
+      alert(error.response?.data || "Failed to save role");
     }
   };
 
@@ -137,12 +149,16 @@ function Role() {
     try {
       const role = await getRoleById(id);
 
+      const selectedPermissionIds = permissions
+        .filter((p) => (role.permissions || []).includes(p.name))
+        .map((p) => p.id);
+
       setFormData({
         roleName: role.roleName || "",
         description: role.description || "",
         status: role.status || "ACTIVE",
         createdBy: role.createdBy || "",
-        permissionIds: role.permissionIds || [],
+        permissionIds: selectedPermissionIds,
       });
 
       setEditId(role.roleId);
@@ -153,21 +169,35 @@ function Role() {
     }
   };
 
-const handleDelete = async (id) => {
-  try {
-    const data = await getAllRoles();
-    const activeRoles = data.filter(
-      (role) => String(role.status).toUpperCase() !== "DELETED"
-    );
-    setRoles(activeRoles);
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    alert("Failed to fetch roles");
-  }
-};
+  const handleDelete = async (id) => {
+    try {
+      const role = await getRoleById(id);
+
+      const selectedPermissionIds = permissions
+        .filter((p) => (role.permissions || []).includes(p.name))
+        .map((p) => p.id);
+
+      const payload = {
+        roleName: role.roleName,
+        description: role.description,
+        status: "INACTIVE",
+        createdBy: role.createdBy || "",
+        permissionIds: selectedPermissionIds,
+      };
+
+      await updateRole(id, payload);
+
+      alert("Role set to inactive successfully");
+      await fetchRoles();
+    } catch (error) {
+      console.error("Error soft deleting role:", error);
+      alert(error.response?.data || "Failed to inactivate role");
+    }
+  };
 
   const filteredRoles = roles.filter((role) => {
-    const permissionNames = getPermissionNames(role.permissionIds || []).join(" ");
+    const permissionNames = getPermissionNames(role.permissions || []).join(" ");
+
     return `${role.roleId} ${role.roleName} ${role.description} ${role.status} ${permissionNames}`
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -208,7 +238,7 @@ const handleDelete = async (id) => {
             <table className="role-table">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>S.No</th>
                   <th>Role Name</th>
                   <th>Description</th>
                   <th>Status</th>
@@ -219,19 +249,21 @@ const handleDelete = async (id) => {
 
               <tbody>
                 {filteredRoles.length > 0 ? (
-                  filteredRoles.map((role) => (
+                  filteredRoles.map((role, index) => (
                     <tr key={role.roleId}>
-                      <td>{role.roleId}</td>
+                      <td>{index + 1}</td>
                       <td>{role.roleName}</td>
                       <td>{role.description}</td>
                       <td>
-                        <span className={`role-status ${String(role.status).toLowerCase()}`}>
+                        <span
+                          className={`role-status ${String(role.status).toLowerCase()}`}
+                        >
                           {role.status}
                         </span>
                       </td>
                       <td>
-                        {getPermissionNames(role.permissionIds || []).length > 0
-                          ? getPermissionNames(role.permissionIds || []).join(", ")
+                        {getPermissionNames(role.permissions || []).length > 0
+                          ? getPermissionNames(role.permissions || []).join(", ")
                           : "No Permissions"}
                       </td>
                       <td>
@@ -325,18 +357,25 @@ const handleDelete = async (id) => {
 
                   <div className="full-width">
                     <label>Permissions</label>
-                    <select
-                      name="permissionIds"
-                      multiple
-                      value={formData.permissionIds}
-                      onChange={handleChange}
-                    >
-                      {permissions.map((permission) => (
-                        <option key={permission.id} value={permission.id}>
-                          {permission.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="permissions-checkbox-list">
+                      {permissions.length > 0 ? (
+                        permissions.map((permission) => (
+                          <label
+                            key={permission.id}
+                            className="permission-checkbox-item"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.permissionIds.includes(permission.id)}
+                              onChange={() => handlePermissionChange(permission.id)}
+                            />
+                            <span>{permission.name}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <p>No permissions available</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
