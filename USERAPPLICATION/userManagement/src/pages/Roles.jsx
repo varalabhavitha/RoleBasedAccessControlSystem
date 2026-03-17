@@ -1,261 +1,3 @@
-// import { useState } from "react";
-// import Sidebar from "../components/Sidebar";
-// import Topbar from "../components/Topbar";
-// import { Search, Plus, Pencil, Trash2, X } from "lucide-react";
-// import "../css/Roles.css";
-
-// function Roles() {
-//   const [roles, setRoles] = useState([]);
-//   const [search, setSearch] = useState("");
-//   const [showModal, setShowModal] = useState(false);
-
-//   const permissionOptions = ["Create_User", "Update_User", "Delete_User"];
-
-//   const [formData, setFormData] = useState({
-//     roleName: "",
-//     description: "",
-//     permissions: [],
-//     status: "Active",
-//   });
-
-//   const handleChange = (e) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       [e.target.name]: e.target.value,
-//     }));
-//   };
-
-//   const handlePermissionChange = (permission) => {
-//     setFormData((prev) => {
-//       const alreadySelected = prev.permissions.includes(permission);
-
-//       return {
-//         ...prev,
-//         permissions: alreadySelected
-//           ? prev.permissions.filter((item) => item !== permission)
-//           : [...prev.permissions, permission],
-//       };
-//     });
-//   };
-
-//   const handleAddRole = (e) => {
-//     e.preventDefault();
-
-//     if (!formData.roleName || !formData.description || formData.permissions.length === 0 || !formData.status) {
-//       alert("Please fill all fields");
-//       return;
-//     }
-
-//     const currentDate = new Date().toLocaleString();
-
-//     const newRole = {
-//       id: roles.length + 1,
-//       roleName: formData.roleName,
-//       description: formData.description,
-//       permissions: formData.permissions,
-//       status: formData.status,
-//     };
-
-//     setRoles((prev) => [...prev, newRole]);
-
-//     setFormData({
-//       roleName: "",
-//       description: "",
-//       permissions: [],
-//       status: "Active",
-//     });
-
-//     setShowModal(false);
-//   };
-
-//   const handleDelete = (id) => {
-//     setRoles((prev) => prev.filter((role) => role.id !== id));
-//   };
-
-//   const filteredRoles = roles.filter((role) =>
-//     `${role.roleName} ${role.description} ${role.permissions.join(" ")} ${role.createdBy} ${role.status}`
-//       .toLowerCase()
-//       .includes(search.toLowerCase())
-//   );
-
-//   return (
-//     <div className="roles-layout">
-//       <Sidebar />
-
-//       <div className="roles-main">
-//         <Topbar title="Roles" />
-
-//         <div className="roles-content">
-//           <div className="roles-toolbar">
-//             <div className="roles-search">
-//               <Search size={22} />
-//               <input
-//                 type="text"
-//                 placeholder="Search roles..."
-//                 value={search}
-//                 onChange={(e) => setSearch(e.target.value)}
-//               />
-//             </div>
-
-//             <button className="roles-add-btn" onClick={() => setShowModal(true)}>
-//               <Plus size={20} />
-//               Add New Role
-//             </button>
-//           </div>
-
-//           <div className="roles-table-wrap">
-//             <table className="roles-table">
-//               <thead>
-//                 <tr>
-//                   <th>ID</th>
-//                   <th>Role Name</th>
-//                   <th>Description</th>
-//                   <th>Permissions</th>
-//                   <th>Created By</th>
-//                   <th>Updated By</th>
-//                   <th>Status</th>
-//                   <th>Created At</th>
-//                   <th>Updated At</th>
-//                   <th>Actions</th>
-//                 </tr>
-//               </thead>
-
-//               <tbody>
-//                 {filteredRoles.length > 0 ? (
-//                   filteredRoles.map((role) => (
-//                     <tr key={role.id}>
-//                       <td>{role.id}</td>
-//                       <td>{role.roleName}</td>
-//                       <td>{role.description}</td>
-//                       <td>{role.permissions.join(", ")}</td>
-//                       <td>{role.createdBy}</td>
-//                       <td>{role.updatedBy}</td>
-//                       <td>
-//                         <span
-//                           className={
-//                             role.status === "Active"
-//                               ? "role-status active"
-//                               : "role-status inactive"
-//                           }
-//                         >
-//                           {role.status}
-//                         </span>
-//                       </td>
-//                       <td>{role.createdAt}</td>
-//                       <td>{role.updatedAt}</td>
-//                       <td>
-//                         <div className="roles-actions">
-//                           <Pencil size={19} className="edit-icon" />
-//                           <Trash2
-//                             size={19}
-//                             className="delete-icon"
-//                             onClick={() => handleDelete(role.id)}
-//                           />
-//                         </div>
-//                       </td>
-//                     </tr>
-//                   ))
-//                 ) : (
-//                   <tr>
-//                     <td colSpan="10" className="no-data">
-//                       No roles added yet
-//                     </td>
-//                   </tr>
-//                 )}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-
-//         {showModal && (
-//           <div className="role-modal-overlay">
-//             <div className="role-modal">
-//               <div className="role-modal-header">
-//                 <h2>Add New Role</h2>
-//                 <button
-//                   className="close-btn"
-//                   onClick={() => setShowModal(false)}
-//                 >
-//                   <X size={24} />
-//                 </button>
-//               </div>
-
-//               <form className="role-form" onSubmit={handleAddRole}>
-//                 <div className="role-form-grid">
-//                   <div>
-//                     <label>Role Name</label>
-//                     <input
-//                       type="text"
-//                       name="roleName"
-//                       value={formData.roleName}
-//                       onChange={handleChange}
-//                     />
-//                   </div>
-
-//                   <div>
-//                     <label>Status</label>
-//                     <select
-//                       name="status"
-//                       value={formData.status}
-//                       onChange={handleChange}
-//                     >
-//                       <option value="Active">Active</option>
-//                       <option value="Inactive">Inactive</option>
-//                     </select>
-//                   </div>
-
-//                   <div className="full-width">
-//                     <label>Description</label>
-//                     <textarea
-//                       name="description"
-//                       value={formData.description}
-//                       onChange={handleChange}
-//                       rows="4"
-//                     ></textarea>
-//                   </div>
-
-//                   <div className="full-width">
-//                     <label>Permissions</label>
-//                     <div className="permissions-box">
-//                       {permissionOptions.map((permission) => (
-//                         <label key={permission} className="permission-item">
-//                           <input
-//                             type="checkbox"
-//                             checked={formData.permissions.includes(permission)}
-//                             onChange={() => handlePermissionChange(permission)}
-//                           />
-//                           <span>{permission}</span>
-//                         </label>
-//                       ))}
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 <div className="role-form-actions">
-//                   <button
-//                     type="button"
-//                     className="cancel-btn"
-//                     onClick={() => setShowModal(false)}
-//                   >
-//                     Cancel
-//                   </button>
-//                   <button type="submit" className="save-btn">
-//                     Save Role
-//                   </button>
-//                 </div>
-//               </form>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Roles;
-
-
-
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -270,8 +12,11 @@ import {
   deleteRole,
 } from "../api/roleApi";
 
+import { getPermissions } from "../api/permissionApi";
+
 function Role() {
   const [roles, setRoles] = useState([]);
+  const [permissions, setPermissions] = useState([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -281,12 +26,12 @@ function Role() {
     description: "",
     status: "ACTIVE",
     createdBy: "",
-    updatedBy: "",
-    permissionIds: "",
+    permissionIds: [],
   });
 
   useEffect(() => {
     fetchRoles();
+    fetchPermissions();
   }, []);
 
   const fetchRoles = async () => {
@@ -299,11 +44,34 @@ function Role() {
     }
   };
 
+  const fetchPermissions = async () => {
+    try {
+      const res = await getPermissions(0, 100);
+      setPermissions(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching permissions:", error);
+      alert("Failed to fetch permissions");
+    }
+  };
+
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value, options } = e.target;
+
+    if (name === "permissionIds") {
+      const selectedValues = Array.from(options)
+        .filter((option) => option.selected)
+        .map((option) => Number(option.value));
+
+      setFormData((prev) => ({
+        ...prev,
+        permissionIds: selectedValues,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [e.target.name]: e.target.value,
+      }));
+    }
   };
 
   const resetForm = () => {
@@ -312,16 +80,29 @@ function Role() {
       description: "",
       status: "ACTIVE",
       createdBy: "",
-      updatedBy: "",
-      permissionIds: "",
+      permissionIds: [],
     });
     setEditId(null);
+  };
+
+  const getPermissionNames = (permissionIds) => {
+    if (!permissionIds || permissionIds.length === 0) return [];
+
+    return permissionIds.map((id) => {
+      const permission = permissions.find((item) => item.id === id);
+      return permission ? permission.name : id;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.roleName || !formData.description || !formData.status || !formData.createdBy) {
+    if (
+      !formData.roleName ||
+      !formData.description ||
+      !formData.status ||
+      !formData.createdBy
+    ) {
       alert("Please fill all required fields");
       return;
     }
@@ -331,14 +112,7 @@ function Role() {
       description: formData.description,
       status: formData.status,
       createdBy: formData.createdBy,
-      updatedBy: formData.updatedBy,
-      permissionIds: formData.permissionIds
-        ? formData.permissionIds
-            .split(",")
-            .map((id) => id.trim())
-            .filter((id) => id !== "")
-            .map((id) => Number(id))
-        : [],
+      permissionIds: formData.permissionIds,
     };
 
     try {
@@ -367,9 +141,8 @@ function Role() {
         roleName: role.roleName || "",
         description: role.description || "",
         status: role.status || "ACTIVE",
-        createdBy: "",
-        updatedBy: "",
-        permissionIds: "",
+        createdBy: role.createdBy || "",
+        permissionIds: role.permissionIds || [],
       });
 
       setEditId(role.roleId);
@@ -380,22 +153,25 @@ function Role() {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteRole(id);
-      alert("Role deleted successfully");
-      fetchRoles();
-    } catch (error) {
-      console.error("Error deleting role:", error);
-      alert("Failed to delete role");
-    }
-  };
+const handleDelete = async (id) => {
+  try {
+    const data = await getAllRoles();
+    const activeRoles = data.filter(
+      (role) => String(role.status).toUpperCase() !== "DELETED"
+    );
+    setRoles(activeRoles);
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    alert("Failed to fetch roles");
+  }
+};
 
-  const filteredRoles = roles.filter((role) =>
-    `${role.roleId} ${role.roleName} ${role.description} ${role.status} ${(role.permissions || []).join(" ")}`
+  const filteredRoles = roles.filter((role) => {
+    const permissionNames = getPermissionNames(role.permissionIds || []).join(" ");
+    return `${role.roleId} ${role.roleName} ${role.description} ${role.status} ${permissionNames}`
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(search.toLowerCase());
+  });
 
   return (
     <div className="role-layout">
@@ -454,8 +230,8 @@ function Role() {
                         </span>
                       </td>
                       <td>
-                        {(role.permissions || []).length > 0
-                          ? role.permissions.join(", ")
+                        {getPermissionNames(role.permissionIds || []).length > 0
+                          ? getPermissionNames(role.permissionIds || []).join(", ")
                           : "No Permissions"}
                       </td>
                       <td>
@@ -547,25 +323,20 @@ function Role() {
                     />
                   </div>
 
-                  <div>
-                    <label>Updated By</label>
-                    <input
-                      type="text"
-                      name="updatedBy"
-                      value={formData.updatedBy}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label>Permission IDs</label>
-                    <input
-                      type="text"
+                  <div className="full-width">
+                    <label>Permissions</label>
+                    <select
                       name="permissionIds"
-                      placeholder="Example: 1,2,3"
+                      multiple
                       value={formData.permissionIds}
                       onChange={handleChange}
-                    />
+                    >
+                      {permissions.map((permission) => (
+                        <option key={permission.id} value={permission.id}>
+                          {permission.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

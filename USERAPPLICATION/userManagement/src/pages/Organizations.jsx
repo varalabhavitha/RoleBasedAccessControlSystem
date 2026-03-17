@@ -1,7 +1,3 @@
-// 
-
-
-
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -38,6 +34,7 @@ function Organization() {
       setOrganizations(data);
     } catch (error) {
       console.error("Error fetching organizations:", error);
+      alert("Failed to fetch organizations");
     }
   };
 
@@ -74,7 +71,7 @@ function Organization() {
         alert("Organization created successfully");
       }
 
-      fetchOrganizations();
+      await fetchOrganizations();
       resetForm();
       setShowModal(false);
     } catch (error) {
@@ -83,7 +80,6 @@ function Organization() {
     }
   };
 
-  // EDIT (fetch organization by ID)
   const handleEdit = async (id) => {
     try {
       const org = await getOrganizationById(id);
@@ -98,6 +94,7 @@ function Organization() {
       setShowModal(true);
     } catch (error) {
       console.error("Error fetching organization:", error);
+      alert("Failed to fetch organization");
     }
   };
 
@@ -105,17 +102,18 @@ function Organization() {
     try {
       await deleteOrganization(id);
       alert("Organization deleted successfully");
-      fetchOrganizations();
+      await fetchOrganizations();
     } catch (error) {
       console.error("Error deleting organization:", error);
+      alert("Failed to delete organization");
     }
   };
 
-const filteredOrganizations = organizations.filter((org) =>
-  `${org.orgId} ${org.orgName} ${org.address} ${org.code}`
-    .toLowerCase()
-    .includes(search.toLowerCase())
-);
+  const filteredOrganizations = organizations.filter((org) =>
+    `${org.orgId} ${org.orgName} ${org.address} ${org.code}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <div className="organization-layout">
@@ -125,7 +123,6 @@ const filteredOrganizations = organizations.filter((org) =>
         <Topbar title="Organizations" />
 
         <div className="organization-content">
-
           <div className="organization-toolbar">
             <div className="organization-search">
               <Search size={22} />
@@ -169,7 +166,6 @@ const filteredOrganizations = organizations.filter((org) =>
                       <td>{org.orgName}</td>
                       <td>{org.address}</td>
                       <td>{org.code}</td>
-
                       <td>
                         <div className="organization-actions">
                           <Pencil
@@ -177,7 +173,6 @@ const filteredOrganizations = organizations.filter((org) =>
                             className="edit-icon"
                             onClick={() => handleEdit(org.orgId)}
                           />
-
                           <Trash2
                             size={19}
                             className="delete-icon"
@@ -195,16 +190,13 @@ const filteredOrganizations = organizations.filter((org) =>
                   </tr>
                 )}
               </tbody>
-
             </table>
           </div>
-
         </div>
 
         {showModal && (
           <div className="org-modal-overlay">
             <div className="org-modal">
-
               <div className="org-modal-header">
                 <h2>{editId ? "Edit Organization" : "Add Organization"}</h2>
 
@@ -220,9 +212,7 @@ const filteredOrganizations = organizations.filter((org) =>
               </div>
 
               <form className="org-form" onSubmit={handleAddOrUpdateOrganization}>
-
                 <div className="org-form-grid">
-
                   <div>
                     <label>Organization Name</label>
                     <input
@@ -252,11 +242,9 @@ const filteredOrganizations = organizations.filter((org) =>
                       onChange={handleChange}
                     />
                   </div>
-
                 </div>
 
                 <div className="org-form-actions">
-
                   <button
                     type="button"
                     className="cancel-btn"
@@ -271,14 +259,11 @@ const filteredOrganizations = organizations.filter((org) =>
                   <button type="submit" className="save-btn">
                     {editId ? "Update Organization" : "Save Organization"}
                   </button>
-
                 </div>
-
               </form>
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

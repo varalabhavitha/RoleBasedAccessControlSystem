@@ -23,6 +23,9 @@ public class User {
     @Column(nullable=false, unique=true)
     private String email;
 
+    @Column(nullable=false, unique=true)
+    private String phoneNumber;
+
     @Column(nullable=false)
     private String password;
 
@@ -33,8 +36,9 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
+
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", unique = true, nullable = false)
+    @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
     @PrePersist

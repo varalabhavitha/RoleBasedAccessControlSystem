@@ -12,18 +12,28 @@ import com.uniquehire.rolemanagement.repository.RoleRepository;
 import com.uniquehire.rolemanagement.repository.UserRepository;
 import com.uniquehire.rolemanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.example.notificationservce.DTO.NotificationRequestDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private static final Logger log = LogManager.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final OrganizationRepository organizationRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public UserResponseDTO registerUser(UserRequestDTO request) {
@@ -36,26 +46,47 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException("Username already exists");
         }
 
-        if (userRepository.existsByOrganization_OrgId(request.getOrganizationId())) {
+        /*if (userRepository.existsByOrganization_OrgId(request.getOrganizationId())) {
             throw new UserAlreadyExistsException("Organization already assigned to another user");
-        }
+        }*/
 
         Role role = roleRepository.findById(request.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
 
         Organization organization = organizationRepository.findById(request.getOrganizationId())
                 .orElseThrow(() -> new RuntimeException("Organization not found"));
-
+        log.error("Before User Object creation");
         User user = User.builder()
                 .username(request.getUsername())
-                .username(request.getUsername())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
                 .password(request.getPassword())
                 .role(role)
                 .organization(organization)
                 .build();
 
         User savedUser = userRepository.save(user);
+
+
+        // CALL NOTIFICATION SERVICE
+
+        NotificationRequestDTO notificationRequest = new NotificationRequestDTO();
+
+        notificationRequest.setEventType("USER_REGISTERED");
+        notificationRequest.setEmail(savedUser.getEmail());
+        notificationRequest.setPhoneNumber(savedUser.getPhoneNumber());
+
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("username", savedUser.getUsername());
+        placeholders.put("organization", savedUser.getOrganization().getOrgName());
+
+        notificationRequest.setPlaceholders(placeholders);
+
+        restTemplate.postForObject(
+                "http://localhost:8080/api/notifications/send",
+                notificationRequest,
+                String.class
+        );
 
         return mapToResponse(savedUser);
     }

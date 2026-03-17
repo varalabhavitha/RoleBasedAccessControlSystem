@@ -18,6 +18,9 @@ public class UserRequestDTO {
     @NotBlank(message = "Email is required")
     private String email;
 
+    @NotBlank(message = "phoneNumber is required")
+    private String phoneNumber;
+
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
